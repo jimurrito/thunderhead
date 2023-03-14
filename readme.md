@@ -15,7 +15,16 @@ The first script, Oculus, will focus on capturing the server at a point in time.
 ### Oculus
 
 At a given interval (1hr), it will capture the output of multiple performance commands.
-- top
-- iotop
-- iftop (requires additional config)
-- 
+
+## Directory Structure
+
+```
+.../th/
+    |- logs/
+    |    |-- (YYYY-MM-DD-HH:MM:SS).tz.xy
+    |    |-- (YYYY-MM-DD-HH:MM:SS).tz.xy
+    |    |-- ...
+    |
+    |- config.json
+    |...
+```
