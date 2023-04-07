@@ -1,30 +1,44 @@
 # Project Thunderhead
-A Simple and Comprehesive monitoring solution
+A Simple and Comprehesive Systems-managing solution
 
 Core Functions
-- Performance
-- Availablity
-- Backups
-- Auditing
-
-## Version 1.0
-
-Scripts will primarily be in Bash. Jobs will be triggered by Cron.
-The first script, Oculus, will focus on capturing the server at a point in time.
+- [x] Performance
+- [ ] Availablity
+- [x] Backups
+- [x] Auditing
+- [ ] Alerting
 
 ### Oculus
 
-At a given interval (1hr), it will capture the output of multiple performance commands.
+Captures the output of multiple performance commands. Compresses the results. Rolls logs over every 14 days.
 
-## Directory Structure
+List of Commands:
+- who
+- last
+- ip a
+- ping -c 8.8.8.8
+- arp
+- netstat
+- zpool status
+- lsblk
+- top -bn5
+- iotop -obn5
+- tcpdump -c 40
+- cat /proc/meminfo
+- free -h
 
-```
-.../th/
-    |- logs/
-    |    |-- (YYYY-MM-DD-HH:MM:SS).tz.xy
-    |    |-- (YYYY-MM-DD-HH:MM:SS).tz.xy
-    |    |-- ...
-    |
-    |- config.json
-    |...
-```
+
+
+### Freezer
+
+Backs up and compresses the current state of **active** docker containers. Will require a brief outage to complete the backup.
+Rolls logs over every 14 days.
+
+## Version History
+
+### Version 1.1
++ Added Freezer.sh for backing-up active docker containers.
+
+### Version 1.0
+Initial Release
++ Added Oculus.sh for post-mortem performance monitoring
