@@ -33,11 +33,13 @@ arp > "$PTDIR/arp.log"
 netstat > "$PTDIR/netstat.log"
 zpool status > "$PTDIR/zpool_stat.log" # only for ZFS users
 lsblk > "$PTDIR/lsblk.log"
-top -bn5 > "$PTDIR/top.log" &
-iotop -obn5 > "$PTDIR/iotop.log" &
-tcpdump -c 40 > "$PTDIR/tcpdump.log"
+# <REMOVED TO LOWER LOG SIZE>
+#top -bn5 > "$PTDIR/top.log"
+#iotop -obn5 > "$PTDIR/iotop.log" &
+#tcpdump -c 40 > "$PTDIR/tcpdump.log"
 cat /proc/meminfo > "$PTDIR/meminfo.log"
 free -h > "$PTDIR/free.log"
+nvidia-smi -h > "$PTDIR/nvidia-smi.log"
 logger "$LOGHEADER System capture complete"
 #
 # Compress run

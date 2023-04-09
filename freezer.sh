@@ -12,7 +12,7 @@ ROLLOVER_INT=14
 # <VARS>
 DATE="$(date +"%Y-%m-%d")"
 CONT_DIR="/disks/compute/docker"
-BACKUP_DIR="/disks/raid/backup"
+BACKUP_DIR="/disks/raid/backup/docker"
 STARTUP=$SECONDS
 #
 # <RUN>

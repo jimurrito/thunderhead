@@ -21,12 +21,12 @@ List of Commands:
 - netstat
 - zpool status
 - lsblk
-- top -bn5
-- iotop -obn5
-- tcpdump -c 40
+- ~~top -bn5~~
+- ~~iotop -obn5~~
+- ~~tcpdump -c 40~~
 - cat /proc/meminfo
 - free -h
-
+- nvidia-smi
 
 
 ### Freezer
@@ -36,9 +36,14 @@ Rolls logs over every 14 days.
 
 ## Version History
 
+### Version 1.2
++ Updated Oculus.sh:
+    + [-] Removed top, iotop, and tcpdump captures to reduce size of logs.
+    + [+] Added nvidia-smi dump to the capture.
+
 ### Version 1.1
-+ Added Freezer.sh for backing-up active docker containers.
++ [+] Added Freezer.sh for backing-up active docker containers.
 
 ### Version 1.0
 Initial Release
-+ Added Oculus.sh for post-mortem performance monitoring
++ [+] Added Oculus.sh for post-mortem performance monitoring
