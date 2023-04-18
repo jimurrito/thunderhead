@@ -21,20 +21,22 @@ List of Commands:
 - netstat
 - zpool status
 - lsblk
-- ~~top -bn5~~
-- ~~iotop -obn5~~
-- ~~tcpdump -c 40~~
 - cat /proc/meminfo
 - free -h
 - nvidia-smi
 
-
 ### Freezer
 
-Backs up and compresses the current state of **active** docker containers. Will require a brief outage to complete the backup.
-Rolls logs over every 14 days.
+Backs up and compresses the persistent data used by the Docker containers. Will require a brief outage to complete the backup.
+Script will temporarily STOP/START only the active containers. Ensuring inactive containers are not booted with the active ones. Rolls logs over every 14 days.
 
 ## Version History
+
+### Version 1.3
++ Updated Freezer.sh:
+    + [+] Changed from TAR archive to TAR.GZ compression. 
+    (Should have been this from the begining 😉)
+    + [+] Updated readme
 
 ### Version 1.2
 + Updated Oculus.sh:
