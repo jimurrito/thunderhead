@@ -32,11 +32,14 @@ Script will temporarily STOP/START only the active containers. Ensuring inactive
 
 ## Version History
 
+### Version 1.4
++ Added Freezer_MC.sh for multi-core compression. pigz instead of gzip.
+   + Currently there are no passable parameters for pigz, but will be added soon. Because of this, pigz will consume all available CPU resources. Use at your own risk!
+
 ### Version 1.3
 + Updated Freezer.sh & Oculus.sh:
     + [+] Changed from TAR archive to TAR.GZ compression. 
     (Should have been this from the begining 😉)
-    + [+] Updated readme
 
 ### Version 1.2
 + Updated Oculus.sh:
