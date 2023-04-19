@@ -33,7 +33,7 @@ docker stop ${CURRENT_CONTAINERS}
 #
 # Capture and compress the containers
 logger "$LOGHEADER Starting Compression"
-tar -cfz "$BACKUP_DIR/$DATE-docker.tar.gz" "$CONT_DIR/."
+tar -zcf "$BACKUP_DIR/$DATE-docker.tar.gz" "$CONT_DIR/."
 logger "$LOGHEADER Finished Compression"
 #
 # Restart the containers

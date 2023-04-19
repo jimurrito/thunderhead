@@ -33,7 +33,7 @@ Script will temporarily STOP/START only the active containers. Ensuring inactive
 ## Version History
 
 ### Version 1.3
-+ Updated Freezer.sh:
++ Updated Freezer.sh & Oculus.sh:
     + [+] Changed from TAR archive to TAR.GZ compression. 
     (Should have been this from the begining 😉)
     + [+] Updated readme
