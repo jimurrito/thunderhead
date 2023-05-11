@@ -3,10 +3,11 @@ A Simple and Comprehesive Systems-managing solution
 
 Core Functions
 - [x] Performance
-- [ ] Availablity
+- [-] Availablity
 - [x] Backups
 - [x] Auditing
-- [ ] Alerting
+- [-] Alerting
+- [x] Enforcement
 
 ### Oculus
 
@@ -30,7 +31,17 @@ List of Commands:
 Backs up and compresses the persistent data used by the Docker containers. Will require a brief outage to complete the backup.
 Script will temporarily STOP/START only the active containers. Ensuring inactive containers are not booted with the active ones. Rolls logs over every 14 days.
 
+### Permission Check
+
+Sets the permissions of a directory. By default, chmod == 777 and owner+group == root.
+Running the script requires providing a directory path as an argument.
+```bash
+Ex: bash prem_check.sh /path/to/dir
+```
 ## Version History
+
+### Version 1.5
++ [+] Added Perm_chk.sh for permissions enforcement.
 
 ### Version 1.4
 + Added Freezer_MC.sh for multi-core compression. pigz instead of gzip.
