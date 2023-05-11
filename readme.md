@@ -3,10 +3,10 @@ A Simple and Comprehesive Systems-managing solution
 
 Core Functions
 - [x] Performance
-- [-] Availablity
+- [ ] Availablity
 - [x] Backups
 - [x] Auditing
-- [-] Alerting
+- [ ] Alerting
 - [x] Enforcement
 
 ### Oculus
@@ -36,9 +36,15 @@ Script will temporarily STOP/START only the active containers. Ensuring inactive
 Sets the permissions of a directory. By default, chmod == 777 and owner+group == root.
 Running the script requires providing a directory path as an argument.
 ```bash
-Ex: bash prem_check.sh /path/to/dir
+Ex: bash perm_chk.sh [/path/to/dir] [owner] [chmod#]
 ```
 ## Version History
+
+### Version 1.5.1
++ Updated Perm_chk.sh
+    + [+] Added additional parameters that are now required for run time.
+>**NOTE**:
+This is the begining of a major change to all scripts moving forward. All options will be moved from being hardcoded, to being cli parameters.
 
 ### Version 1.5
 + [+] Added Perm_chk.sh for permissions enforcement.
