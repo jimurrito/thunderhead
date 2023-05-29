@@ -25,6 +25,9 @@ List of Commands:
 - free -h
 - nvidia-smi
 - zpool status
+```bash
+Ex: bash oculus.bash -r [/path/to/dir] -R [Rollover Days] --ZFS --NVIDIA
+```
 
 ### Freezer
 
