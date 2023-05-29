@@ -20,31 +20,39 @@ List of Commands:
 - ping -c 8.8.8.8
 - arp
 - netstat
-- zpool status
 - lsblk
 - cat /proc/meminfo
 - free -h
 - nvidia-smi
+- zpool status
 
 ### Freezer
 
 Backs up and compresses the persistent data used by the Docker containers. Will require a brief outage to complete the backup.
 Script will temporarily STOP/START only the active containers. Ensuring inactive containers are not booted with the active ones. Rolls logs over every 14 days.
 
-### Permission Check
+### ~~Permission Check~~ 
+**Temporaily Deprecated** - *Lack of 'no-cobble' causes unintended modifications of compliant files. This breaks things like rollover that relies on last modified time. Script is not recommended to be ran until this is fixed in the next few updates. >2.0.0*
 
-Sets the permissions of a directory. By default, chmod == 777 and owner+group == root.
-Running the script requires providing a directory path as an argument.
+~~Sets the permissions of a directory. By default, chmod == 777 and owner+group == root.
+Running the script requires providing a directory path as an argument.~~
 ```bash
 Ex: bash perm_chk.sh [/path/to/dir] [owner] [chmod#]
 ```
 ## Version History
 
+### Version 2.0.0 - *'Electric Boogaloo'*
++ Updated Oculus.sh -> Oculus.bash
+  + [+] Runtime Arguments
+  + [+] Error propagation
+  + [+] Console logging as well as to syslog/messages logs
++ Perm_chk.sh as been temporarily deprecated until compliant no-cobbling is added.
+
 ### Version 1.5.1
 + Updated Perm_chk.sh
     + [+] Added additional parameters that are now required for run time.
 >**NOTE**:
-This is the begining of a major change to all scripts moving forward. All options will be moved from being hardcoded, to being cli parameters.
+*This is the begining of a major change to all scripts moving forward. All options will be moved from being hardcoded, to being runtime arguments.*
 
 ### Version 1.5
 + [+] Added Perm_chk.sh for permissions enforcement.
@@ -68,4 +76,4 @@ This is the begining of a major change to all scripts moving forward. All option
 
 ### Version 1.0
 Initial Release
-+ [+] Added Oculus.sh for post-mortem performance monitoring
++ [+] Added Oculus.sh for point-in-time performance monitoring
