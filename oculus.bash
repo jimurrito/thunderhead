@@ -22,15 +22,11 @@ log() {
 }
 # Fail Check Function
 fc() {
-    if [[ -n $1 ]]; then
-    log "$2 ErrorMsg($1)"; exit 1
-    fi
+    if [[ -n $1 ]]; then log "$2 ErrorMsg($1)"; exit 1; fi
 }
 # Empty Check Function
 ec() {
-    if [[ -z $1 ]]; then
-    log "$2"; exit 1
-    fi
+    if [[ -z $1 ]]; then log "$2"; exit 1; fi
 }
 #
 #
