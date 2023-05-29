@@ -32,7 +32,10 @@ Ex: bash oculus.bash -r [/path/to/dir] -R [Rollover Days] --ZFS --NVIDIA
 ### Freezer
 
 Backs up and compresses the persistent data used by the Docker containers. Will require a brief outage to complete the backup.
-Script will temporarily STOP/START only the active containers. Ensuring inactive containers are not booted with the active ones. Rolls logs over every 14 days.
+Script will temporarily STOP/START only the active containers. Ensuring inactive containers are not booted with the active ones. Rolls logs over every 14 days. **Pigz available as a multi-core solution instead of gzip for compression.**
+```bash
+Ex: bash freezer.bash -s [/container/data] -t [/target/dir] [--pigz]
+```
 
 ### ~~Permission Check~~ 
 **Temporaily Deprecated** - *Lack of 'no-cobble' causes unintended modifications of compliant files. This breaks things like rollover that relies on last modified time. Script is not recommended to be ran until this is fixed in the next few updates. >2.0.0*
@@ -43,6 +46,14 @@ Running the script requires providing a directory path as an argument.~~
 Ex: bash perm_chk.sh [/path/to/dir] [owner] [chmod#]
 ```
 ## Version History
+
+### Version 2.0.1 - *'Freezer Update'*
++ Merged freezer_MC and freezer using command-line arguments.
++ Updated Freezer.sh -> Freezer.bash
+  + [+] Runtime Arguments
+  + [+] Error propagation
+  + [+] Console logging as well as to syslog/messages logs
+  + [+] Ability to use pigz compression instead of gzip via arguments
 
 ### Version 2.0.0 - *'Electric Boogaloo'*
 + Updated Oculus.sh -> Oculus.bash

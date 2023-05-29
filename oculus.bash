@@ -8,12 +8,12 @@ Gathers a snapshot of the current state of the machine.
 '
 #
 # <CONSTANTS>
-LOGHEADER="[TH] [Oculus.sh]"
+LOGHEADER="[TH][Oculus.sh]"
 DATE="$(date +"%Y-%m-%dT%H:%M")"
 STARTUP=$SECONDS
 ARGC=0
 ARGS=("$@")
-TEMP_PATH="tmp/th/oc/$DATE"
+TEMP_PATH="/tmp/th/oc/$DATE"
 #
 # Log Func
 log() {
@@ -80,25 +80,25 @@ log "Start-up"
 # Run Path
 fc "$(mkdir -p "$RUN_PATH" 2>&1)" "[0x1] Failed to Create Run Path directory '$RUN_PATH'"
 # Temp Path
-fc "$(mkdir -p "/$TEMP_PATH" 2>&1)" "[0x1] Failed to Create Temporary directory '/$TEMP_PATH'"
+fc "$(mkdir -p "$TEMP_PATH" 2>&1)" "[0x1] Failed to Create Temporary directory '$TEMP_PATH'"
 #
 #
 # Snapshot begins
 log "Starting System capture"
 #
 # Snapshot (Regular)
-who > "/$TEMP_PATH/who.log"
-last > "/$TEMP_PATH/last.log"
-ip a > "/$TEMP_PATH/ip.log"
-ping -c 4 8.8.8.8 > "/$TEMP_PATH/ping.log" # Records if there was internet access
-arp > "/$TEMP_PATH/arp.log"
-netstat > "/$TEMP_PATH/netstat.log"
-lsblk > "/$TEMP_PATH/lsblk.log"
-cat /proc/meminfo > "/$TEMP_PATH/meminfo.log"
-free -h > "/$TEMP_PATH/free.log"
+who > "$TEMP_PATH/who.log"
+last > "$TEMP_PATH/last.log"
+ip a > "$TEMP_PATH/ip.log"
+ping -c 4 8.8.8.8 > "$TEMP_PATH/ping.log" # Records if there was internet access
+arp > "$TEMP_PATH/arp.log"
+netstat > "$TEMP_PATH/netstat.log"
+lsblk > "$TEMP_PATH/lsblk.log"
+cat /proc/meminfo > "$TEMP_PATH/meminfo.log"
+free -h > "$TEMP_PATH/free.log"
 # (Optional)
-if [[ $ZFS ]]; then zpool status > "/$TEMP_PATH/zpool_stat.log"; fi
-if [[ $NVIDIA ]]; then nvidia-smi > "/$TEMP_PATH/nvidia-smi.log"; fi
+if [[ $ZFS ]]; then zpool status > "$TEMP_PATH/zpool_stat.log"; fi
+if [[ $NVIDIA ]]; then nvidia-smi > "$TEMP_PATH/nvidia-smi.log"; fi
 #
 log "System capture complete"
 #
@@ -106,8 +106,8 @@ log "System capture complete"
 # Compress run
 log "Starting compression"
 #
-fc "$(tar -zcf "$RUN_PATH/$DATE.tar.gz" -C / "$TEMP_PATH" 2>&1)" "[0x1] Compression Failed!"
-rm -dr "/$TEMP_PATH"
+fc "$(tar -zcf "$RUN_PATH/$DATE.tar.gz" -C / "${TEMP_PATH#/}" 2>&1)" "[0x1] Compression Failed!"
+rm -dr "$TEMP_PATH"
 log "Compression Complete"
 #
 # Roll over logs
