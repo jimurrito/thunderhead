@@ -8,7 +8,7 @@ Gathers a snapshot of the current state of the machine.
 '
 #
 # <CONSTANTS>
-LOGHEADER="[TH][Oculus.sh]"
+LOGHEADER="[TH][Oculus]"
 DATE="$(date +"%Y-%m-%dT%H:%M")"
 STARTUP=$SECONDS
 ARGC=0
@@ -17,12 +17,15 @@ TEMP_PATH="/tmp/th/oc/$DATE"
 #
 # Log Func
 log() {
-    MSG="$LOGHEADER $1"
-    echo "$MSG"; logger "$MSG"
+    echo "$1"; logger "$LOGHEADER $1"
 }
 # Fail Check Function
 fc() {
     if [[ -n $1 ]]; then log "$2 ErrorMsg($1)"; exit 1; fi
+}
+# Fail Check - NO KILL - Function
+fcnk() {
+    if [[ -n $1 ]]; then log "$2 ErrorMsg($1)"; fi
 }
 # Empty Check Function
 ec() {
@@ -106,7 +109,7 @@ log "System capture complete"
 # Compress run
 log "Starting compression"
 #
-fc "$(tar -zcf "$RUN_PATH/$DATE.tar.gz" -C / "${TEMP_PATH#/}" 2>&1)" "[0x1] Compression Failed!"
+fcnk "$(tar -zcf "$RUN_PATH/$DATE.tar.gz" -C / "${TEMP_PATH#/}" 2>&1)" "[0x1] Compression Failed!"
 rm -dr "$TEMP_PATH"
 log "Compression Complete"
 #

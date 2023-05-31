@@ -8,20 +8,23 @@ Compressing the current state.
 '
 #
 # <CONSTANTS>
-LOGHEADER="[TH][Freezer.sh]"
-DATE="$(date +"%Y-%m-%dT%H:%M")"
+LOGHEADER="[TH][Freezer]"
+DATE="$(date +"%Y-%m-%d")"
 STARTUP=$SECONDS
 ARGC=0
 ARGS=("$@")
 #
 # Log Func
 log() {
-    MSG="$LOGHEADER $1"
-    echo "$MSG"; logger "$MSG"
+    echo "$1"; logger "$LOGHEADER $1"
 }
 # Fail Check Function
 fc() {
     if [[ -n $1 ]]; then log "$2 ErrorMsg($1)"; exit 1; fi
+}
+# Fail Check - NO KILL - Function
+fcnk() {
+    if [[ -n $1 ]]; then log "$2 ErrorMsg($1)"; fi
 }
 # Empty Check Function
 ec() {
@@ -90,9 +93,9 @@ docker stop ${CURRENT_CONTAINERS}
 log "Starting Compression $( if [[ $PIGZ ]]; then echo "using pigz"; fi )"
 #
 if [[ $PIGZ ]]; then
-    fc "$(tar -c --use-compress-program=pigz -f "$TARGET/$DATE-docker.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Compression with Pigz Failed!"
+    fcnk "$(tar -c --use-compress-program=pigz -f "$TARGET/$DATE-docker.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Compression with Pigz Failed!"
 else
-    fc "$(tar -zcf "$TARGET/$DATE-docker.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Compression Failed!"
+    fcnk "$(tar -zcf "$TARGET/$DATE-docker.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Compression Failed!"
 fi
 log "Finished Compression"
 #
