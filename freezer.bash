@@ -30,6 +30,13 @@ fcnk() {
 ec() {
     if [[ -z $1 ]]; then log "$2"; exit 1; fi
 }
+# Run scripts BULK
+runbulk() {
+    for i in $( ls "$1"*.sh | grep -v DEP ); do
+        log "Recreating '$i'..."
+        bash "$i"
+    done
+}
 #
 #
 # Parse Input Vars
@@ -47,6 +54,10 @@ for ARG in "${ARGS[@]}"; do
     "-r" | "--rollover")
         ROLLOVER=${ARGS[$ARGC+1]}
     ;;
+    # Custom run scripts (Hard restart)
+    "-H" | "--hardreset")
+        HARD=${ARGS[$ARGC+1]}
+    ;;
     # Use Pigz instead of gzip (Opt)
     "--pigz")
         PIGZ=true
@@ -54,11 +65,13 @@ for ARG in "${ARGS[@]}"; do
     # Help menu
     "-h" | "--help")
         printf "Thunderhead - Freezer Help Menu
-    -s --source    Path to container data
-    -t --target    Target directory for tar backup
-    -r --rollover  Sets rollover interval. Defaults to 14 days.
-       --pigz      Uses pigz for compression instead of gzip
-    -h --help      This menu\n"
+    -s --source     Path to container data
+    -t --target     Target directory for tar backup
+    -r --rollover   Sets rollover interval. Defaults to 14 days.
+    -H --hardreset  Instead of using the standard docker retart method, all containers are destroyed and recreated. 
+                        Requires custom runscripts. (See github)
+       --pigz       Uses pigz for compression instead of gzip
+    -h --help       This menu\n"
         exit
     ;;
     esac
@@ -89,19 +102,33 @@ CURRENT_CONTAINERS="$(docker ps -q)"
 log "Stoping Containers"
 docker stop ${CURRENT_CONTAINERS}
 #
+# Hard reset [1] - RM containers
+if [[ -n "$HARD" ]]; then
+    log "[Hard Reset] Deleting Containers and Networks from docker..."
+    docker rm ${CURRENT_CONTAINERS}
+    docker network rm $(docker network ls -q)
+fi
+#
 # Capture and compress the containers
 log "Starting Compression $( if [[ $PIGZ ]]; then echo "using pigz"; fi )"
 #
 if [[ $PIGZ ]]; then
-    fcnk "$(tar -c --use-compress-program=pigz -f "$TARGET/$DATE-docker.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Compression with Pigz Failed!"
+    fcnk "$(tar -c --use-compress-program=pigz -f "$TARGET/$DATE-docker.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Compression with Pigz may have failed"
 else
-    fcnk "$(tar -zcf "$TARGET/$DATE-docker.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Compression Failed!"
+    fcnk "$(tar -zcf "$TARGET/$DATE-docker.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Compression may have failed"
 fi
 log "Finished Compression"
 #
-# Restart the containers
-log "Starting Containers"
-docker start ${CURRENT_CONTAINERS}
+# Hard reset [2] - rebuild containers
+if [[ -n "$HARD" ]]; then
+    log "[Hard Reset] Rebuilding Containers and Networks using dir: $HARD"
+    runbulk "$HARD/networks/"
+    runbulk "$HARD/containers/"
+else
+    # Regular restart of the containers
+    log "Starting Containers"
+    docker start ${CURRENT_CONTAINERS}
+fi
 #
 # Roll over logs
 find "$TARGET/." -mtime "+$ROLLOVER" -delete
