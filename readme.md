@@ -9,7 +9,9 @@ Core Functions
 - [ ] Alerting
 - [x] Enforcement
 
-### Oculus
+---
+
+## Oculus
 
 Captures the output of multiple performance commands. Compresses the results. Rolls logs over every 14 days.
 
@@ -26,26 +28,64 @@ List of Commands:
 - nvidia-smi
 - zpool status
 ```bash
-Ex: bash oculus.bash -r [/path/to/dir] -R [Rollover Days] --ZFS --NVIDIA
+:$ bash oculus.bash -r [/path/to/dir] -R [Rollover Days] --ZFS --NVIDIA
 ```
 
-### Freezer
+---
+
+## Freezer
 
 Backs up and compresses the persistent data used by the Docker containers. Will require a brief outage to complete the backup.
 Script will temporarily STOP/START only the active containers. Ensuring inactive containers are not booted with the active ones. Rolls logs over every 14 days. **Pigz available as a multi-core solution instead of gzip for compression.**
 ```bash
-Ex: bash freezer.bash -s [/container/data] -t [/target/dir] [--pigz]
+:$ bash freezer.bash -s [/container/data] -t [/target/dir] [--pigz]
 ```
 
-### ~~Permission Check~~ 
+---
+
+## Refresh
+Destroys all resources in docker (containers, images, networks, etc), and rebuild from a defined set of build scripts. The purpose of this being to redeploy all containers with fresh, up-to-date images.
+```bash
+:$ bash refresh.bash -r [/runscripts] --CONFIRM
+```
+#### Run scripts
+The runscripts used by refresh must be within the following format to be used by the script effectively.
+```
+~/dockerscripts/
+  |-containers/
+    |- container1.sh
+    |- conatiner2.sh
+    |- ...
+  |-networks/
+    |- network1.sh
+    |- network2.sh
+```
+```bash
+# Example
+:$ bash refresh.bash -r ~/dockerscripts --CONFIRM
+```
+> Network scripts are ran first, then conatiners. If you have any containers, that are used like a network (Ex: gluetun) please put that run script in the *network/* directory.
+
+---
+
+## ~~Permission Check~~ 
 **Temporaily Deprecated** - *Lack of 'no-cobble' causes unintended modifications of compliant files. This breaks things like rollover that relies on last modified time. Script is not recommended to be ran until this is fixed in the next few updates. >2.0.0*
 
 ~~Sets the permissions of a directory. By default, chmod == 777 and owner+group == root.
 Running the script requires providing a directory path as an argument.~~
 ```bash
-Ex: bash perm_chk.sh [/path/to/dir] [owner] [chmod#]
+:$ bash perm_chk.sh [/path/to/dir] [owner] [chmod#]
 ```
+
+---
+
 ## Version History
+
+### Version 2.0.2 - *'Refresh + Bug fixes'*
++ [+] Added refresh.bash for cleaning docker, and maintaining up-to-date images
++ Fixed bugs on multiple scripts
+  + [tar-bug] Updated to Oculus and Freeze to avoid exiting when tar produces verbose. Tar does not properly implement stderr vs stdout for errors and info logging respectively.
+  + Updated logging to not prepend the service header for console logging. (Syslog/messages logging still shows the service header)
 
 ### Version 2.0.1 - *'Freezer Update'*
 + Merged freezer_MC and freezer using command-line arguments.
