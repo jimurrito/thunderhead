@@ -109,7 +109,7 @@ log "System capture complete"
 # Compress run
 log "Starting compression"
 #
-fcnk "$(tar -zcf "$RUN_PATH/$DATE.tar.gz" -C / "${TEMP_PATH#/}" 2>&1)" "[0x1] Compression Failed!"
+fcnk "$(tar -zcf "$RUN_PATH/$DATE.tar.gz" -C / "${TEMP_PATH#/}" 2>&1)" "[0x1] Compression may have failed"
 rm -dr "$TEMP_PATH"
 log "Compression Complete"
 #

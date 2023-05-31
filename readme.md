@@ -40,6 +40,8 @@ Script will temporarily STOP/START only the active containers. Ensuring inactive
 ```bash
 :$ bash freezer.bash -s [/container/data] -t [/target/dir] [--pigz]
 ```
+### Hard Reset
+In v2.0.3, -h/--hardreset was added to Freezer. This allows for custom run scripts to be ran when containers are restarted. When used, the script will delete all networks and containers (not prune) and then perform the backup. Once done, the run scripts and used to bring everying backup. [**Please refer to Refresh's section on Run Scripts for more info.**](https://github.com/jimurrito/thunderhead#run-scripts)
 
 ---
 
@@ -48,17 +50,18 @@ Destroys all resources in docker (containers, images, networks, etc), and rebuil
 ```bash
 :$ bash refresh.bash -r [/runscripts] --CONFIRM
 ```
-#### Run scripts
-The runscripts used by refresh must be within the following format to be used by the script effectively.
+### Run scripts
+The runscripts used by refresh/freezer must be within the following format to be used by the script(s) effectively.
 ```
 ~/dockerscripts/
   |-containers/
-    |- container1.sh
-    |- conatiner2.sh
-    |- ...
+  |  |- container1.sh
+  |  |- conatiner2.sh
+  |  |- ...
+  |
   |-networks/
-    |- network1.sh
-    |- network2.sh
+     |- network1.sh
+     |- network2.sh
 ```
 ```bash
 # Example
@@ -80,6 +83,10 @@ Running the script requires providing a directory path as an argument.~~
 ---
 
 ## Version History
+
+### Version 2.0.3
++ [+] Added custom runscripts to Freezer, allowing for custom redeployment via hardreset.
++ Futher improved the prior bug-fix for oculus and freezer.
 
 ### Version 2.0.2 - *'Refresh + Bug fixes'*
 + [+] Added refresh.bash for cleaning docker, and maintaining up-to-date images
