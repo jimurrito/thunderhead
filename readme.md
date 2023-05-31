@@ -64,6 +64,14 @@ The runscripts used by refresh/freezer must be within the following format to be
      |- network2.sh
 ```
 ```bash
+# Run Script Examples
+# container1.sh
+docker run -p 80:80 repo/container1
+
+# network1.sh
+docker network create network1
+```
+```bash
 # Example
 :$ bash refresh.bash -r ~/dockerscripts --CONFIRM
 ```
