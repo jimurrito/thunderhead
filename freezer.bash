@@ -132,6 +132,6 @@ fi
 #
 # Roll over logs
 find "$TARGET/." -mtime "+$ROLLOVER" -delete
-log "Removing backups older than ($ROLLOVER) days"
+log "Removed backups older than ($ROLLOVER) days"
 #
 log "Finished. Completed in ($(( $SECONDS - $STARTUP )))s"

@@ -68,6 +68,7 @@ if [[ -z $SILENT ]]; then  echo "WARNING! THIS OPERATION WILL DESTROY ALL DOCKER
 ec "$CONFIRM" "[0X1] '--CONFIRM' is required to run the script. Please add it to your command to continue."
 #
 # <Main>
+log "Start-up"
 #
 log "Stoping Containers."
 docker stop $(docker ps -qa)

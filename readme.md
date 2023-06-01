@@ -92,6 +92,9 @@ Running the script requires providing a directory path as an argument.~~
 
 ## Version History
 
+### Version 2.0.3.1
++ Minor tweets to Freezer and Refresh
+
 ### Version 2.0.3
 + [+] Added custom runscripts to Freezer, allowing for custom redeployment via hardreset.
 + Futher improved the prior bug-fix for oculus and freezer.
@@ -99,7 +102,7 @@ Running the script requires providing a directory path as an argument.~~
 ### Version 2.0.2 - *'Refresh + Bug fixes'*
 + [+] Added refresh.bash for cleaning docker, and maintaining up-to-date images
 + Fixed bugs on multiple scripts
-  + [tar-bug] Updated to Oculus and Freeze to avoid exiting when tar produces verbose. Tar does not properly implement stderr vs stdout for errors and info logging respectively.
+  + [tar-bug] Updated to Oculus and Freezer to avoid exiting when tar produces verbose. Tar does not properly implement stderr vs stdout for errors and info logging respectively.
   + Updated logging to not prepend the service header for console logging. (Syslog/messages logging still shows the service header)
 
 ### Version 2.0.1 - *'Freezer Update'*
