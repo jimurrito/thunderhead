@@ -28,7 +28,7 @@ List of Commands:
 - nvidia-smi
 - zpool status
 ```bash
-:$ bash oculus.bash -r [/path/to/dir] -R [Rollover Days] --ZFS --NVIDIA
+bash oculus.bash -r [/path/to/dir] -R [Rollover Days] --ZFS --NVIDIA
 ```
 
 ---
@@ -38,7 +38,7 @@ List of Commands:
 Backs up and compresses the persistent data used by the Docker containers. Will require a brief outage to complete the backup.
 Script will temporarily PAUSE only active containers. Ensuring inactive containers are not restarted with the active ones. Rolls logs over every 14 days default. **Pigz available as a multi-core solution instead of gzip for compression.**
 ```bash
-:$ bash freezer.bash -s [/container/data] -t [/target/dir] [--pigz]
+bash freezer.bash -s [/container/data] -t [/target/dir] [--pigz]
 ```
 ### Hard Reset
 In v2.0.3, -h/--hardreset was added to Freezer. This allows for custom run scripts to be ran when containers are restarted. When used, the script will delete all networks and containers (not prune) and then perform the backup. Once done, the run scripts and used to bring everying backup. [**Please refer to Refresh's section on Run Scripts for more info.**](https://github.com/jimurrito/thunderhead#run-scripts)
@@ -48,7 +48,7 @@ In v2.0.3, -h/--hardreset was added to Freezer. This allows for custom run scrip
 ## Refresh
 Destroys all resources in docker (containers, images, networks, etc), and rebuild from a defined set of build scripts. The purpose of this being to redeploy all containers with fresh, up-to-date images.
 ```bash
-:$ bash refresh.bash -r [/runscripts] --CONFIRM
+bash refresh.bash -r [/runscripts] --CONFIRM
 ```
 ### Run scripts
 The runscripts used by refresh/freezer must be within the following format to be used by the script(s) effectively.
@@ -73,11 +73,22 @@ docker network create network1
 ```
 ```bash
 # Example
-:$ bash refresh.bash -r ~/dockerscripts --CONFIRM
+bash refresh.bash -r ~/dockerscripts --CONFIRM
 ```
 > Network scripts are ran first, then conatiners. If you have any containers, that are used like a network (Ex: gluetun) please put that run script in the *network/* directory.
 
 ---
+
+## VPN Check
+*For the paranoid in all of us...*
+
+This script will execute either wget or curl within a provided set of containers. These queries will pull back the current IP of both the host server and containers. If any container matches the Ip of the host, its killed.
+```bash
+bash vpn_chk.bash container1 container2...
+```
+>**Note:**
+> If the container has neither *wget* or *curl* available, the script will mark the IP Address as '*FAIL*', and ignore the container. It will not be stopped.
+
 
 ## ~~Permission Check~~ 
 **Temporaily Deprecated** - *Lack of 'no-cobble' causes unintended modifications of compliant files. This breaks things like rollover that relies on last modified time. Script is not recommended to be ran until this is fixed in the next few updates. >2.0.0*
@@ -91,6 +102,9 @@ Running the script requires providing a directory path as an argument.~~
 ---
 
 ## Version History
+
+### Version 2.0.5 - *'The Rusty-Shackleford update'*
++ [+] Added vpn_chk.bash. This will check the complaince of containers that should be on VPN.
 
 ### Version 2.0.4 - *'Freezer Update'*
 + [+] Freezer now pauses containers by default, instead of restarting them.
