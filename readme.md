@@ -36,7 +36,7 @@ List of Commands:
 ## Freezer
 
 Backs up and compresses the persistent data used by the Docker containers. Will require a brief outage to complete the backup.
-Script will temporarily STOP/START only the active containers. Ensuring inactive containers are not booted with the active ones. Rolls logs over every 14 days. **Pigz available as a multi-core solution instead of gzip for compression.**
+Script will temporarily PAUSE only active containers. Ensuring inactive containers are not restarted with the active ones. Rolls logs over every 14 days default. **Pigz available as a multi-core solution instead of gzip for compression.**
 ```bash
 :$ bash freezer.bash -s [/container/data] -t [/target/dir] [--pigz]
 ```
@@ -91,6 +91,10 @@ Running the script requires providing a directory path as an argument.~~
 ---
 
 ## Version History
+
+### Version 2.0.4 - *'Freezer Update'*
++ [+] Freezer now pauses containers by default, instead of restarting them.
+  + Restarts can now be done via -R or --reset if it's still needed.
 
 ### Version 2.0.3.1
 + Minor tweets to Freezer and Refresh
