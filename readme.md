@@ -103,6 +103,9 @@ Running the script requires providing a directory path as an argument.~~
 
 ## Version History
 
+### Version 2.0.5.1 - *'VPN Check - fix'*
++ Fixed bug in vpn_chk.bash, that caused the IP pulled from the containers to always be the FAIL placeholder.
+
 ### Version 2.0.5 - *'The Rusty-Shackleford update'*
 + [+] Added vpn_chk.bash. This will check the complaince of containers that should be on VPN.
 
