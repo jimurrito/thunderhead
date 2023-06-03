@@ -54,6 +54,10 @@ for ARG in "${ARGS[@]}"; do
     "-r" | "--rollover")
         ROLLOVER=${ARGS[$ARGC+1]}
     ;;
+    # Restart containers on backup
+    "-R" | "--reset")
+        RESET=true
+    ;;
     # Custom run scripts (Hard restart)
     "-H" | "--hardreset")
         HARD=${ARGS[$ARGC+1]}
@@ -68,7 +72,8 @@ for ARG in "${ARGS[@]}"; do
     -s --source     Path to container data
     -t --target     Target directory for tar backup
     -r --rollover   Sets rollover interval. Defaults to 14 days.
-    -H --hardreset  Instead of using the standard docker retart method, all containers are destroyed and recreated. 
+    -R --reset      Restart docker containers during the backup
+    -H --hardreset  Instead of using the standard docker pause method, all containers are destroyed and recreated. 
                         Requires custom runscripts. (See github)
        --pigz       Uses pigz for compression instead of gzip
     -h --help       This menu\n"
@@ -98,15 +103,22 @@ fc "$(mkdir -p "$TARGET" 2>&1)" "[0x1] Failed to Create/Access target directory 
 # Record currently running containers
 CURRENT_CONTAINERS="$(docker ps -q)"
 #
-# Stop all containers
-log "Stoping Containers"
-docker stop ${CURRENT_CONTAINERS}
 #
-# Hard reset [1] - RM containers
-if [[ -n "$HARD" ]]; then
+# If reset is needed (-R | --reset)
+if [[ $RESET ]]; then
+    log "Stoping Containers"
+    docker stop ${CURRENT_CONTAINERS}
+# Hard reset [1] - RM containers (-H | --hardreset)
+elif [[ -n "$HARD" ]]; then
+    log "Stoping Containers"
+    docker stop ${CURRENT_CONTAINERS}
     log "[Hard Reset] Deleting Containers and Networks from docker..."
     docker rm ${CURRENT_CONTAINERS}
     docker network rm $(docker network ls -q)
+# Pause Conatiners [Default] 
+else
+    log "Pausing Containers"
+    docker pause ${CURRENT_CONTAINERS}
 fi
 #
 # Capture and compress the containers
