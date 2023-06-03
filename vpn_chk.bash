@@ -42,15 +42,15 @@ for c in "${CONTS[@]}"; do
     log "Checking IP of container: $c, using curl..."
     #
     # First test - Curl
-    DIP=$(docker exec -ti "$c" "$CMD")
+    DIP=$(docker exec -ti "$c" $CMD)
     #
     # Second test - wget
-    if [[ "$DIP" != "*.*.*.*" ]]; then
+    if ! [[ "$DIP" =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
         log "Using curl failed for conatiner: $c testing with wget..."
         DIP=$(wgetM "$c" "$URL")
     fi
     # Catchall
-    if [[ "$DIP" != "*.*.*.*" ]]; then
+    if ! [[ "$DIP" =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
         log "Using both curl and wget failed for conatiner: $c skipping container..."
         DIP=FAIL
     fi
