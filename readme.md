@@ -43,6 +43,9 @@ bash freezer.bash -s [/container/data] -t [/target/dir] [--pigz]
 ### Hard Reset
 In v2.0.3, -h/--hardreset was added to Freezer. This allows for custom run scripts to be ran when containers are restarted. When used, the script will delete all networks and containers (not prune) and then perform the backup. Once done, the run scripts and used to bring everying backup. [**Please refer to Refresh's section on Run Scripts for more info.**](https://github.com/jimurrito/thunderhead#run-scripts)
 
+### KVM Support (2.0.6+)
+Using '-k' or '--kvm' with freezer offers support to backup KVM Virtual Machines. The primary process is the same, and most arguments work unaltered. 
+>**NOTE:** '-H' or '--hardreset' is not supported, when using KVM Support.
 ---
 
 ## Refresh
@@ -102,6 +105,10 @@ Running the script requires providing a directory path as an argument.~~
 ---
 
 ## Version History
+
+### Version 2.0.6 - *'Freezer + KVM'*
++ [+] Added KVM support to Freezer.bash.
+  + -k or --kvm can be used to opt for KVM usage instead of docker
 
 ### Version 2.0.5.1 - *'VPN Check - fix'*
 + Fixed bug in vpn_chk.bash, that caused the IP pulled from the containers to always be the FAIL placeholder.
