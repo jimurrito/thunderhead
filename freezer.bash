@@ -1,9 +1,9 @@
 #!/bin/bash
 : '
 
-FREEZER.SH
-Stops and captures the current state of docker containers.
-Compressing the current state.
+FREEZER
+Stops and captures the current state of docker containers and KVM VMs.
+Compressing and Archiving the current state.
 
 '
 #
@@ -66,6 +66,10 @@ for ARG in "${ARGS[@]}"; do
     "--pigz")
         PIGZ=true
     ;;
+    # KVM instead of Docker
+    "-k" | "--kvm")
+        KVM=true
+    ;;
     # Help menu
     "-h" | "--help")
         printf "Thunderhead - Freezer Help Menu
@@ -76,6 +80,7 @@ for ARG in "${ARGS[@]}"; do
     -H --hardreset  Instead of using the standard docker pause method, all containers are destroyed and recreated. 
                         Requires custom runscripts. (See github)
        --pigz       Uses pigz for compression instead of gzip
+    -k --kvm        Backs up KVM VMs instead of Docker containers. Hardreset not support.
     -h --help       This menu\n"
         exit
     ;;
@@ -91,6 +96,32 @@ if [[ -z $ROLLOVER ]]; then log "No Rollover integer provided, defaulting to 14 
 # Fix for bug when source is '.'
 if [[ "$SOURCE" == "." ]]; then SOURCE=$(pwd); fi
 #
+# Compress Function
+compress() {
+    #
+    TYPE=$1
+    #
+    # Capture and compress the resources
+    log "Starting Compression $( if [[ $PIGZ ]]; then echo "using pigz"; fi )"
+    #
+    if [[ $PIGZ ]]; then
+        fcnk "$(tar -c --use-compress-program=pigz -f "$TARGET/$DATE-$TYPE.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Compression with Pigz may have failed"
+    else
+        fcnk "$(tar -zcf "$TARGET/$DATE-$TYPE.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Compression may have failed"
+    fi
+    log "Finished Compression"
+    #
+}
+# Summary log fnc
+summary() {
+    #
+    # Roll over logs
+    find "$TARGET/." -mtime "+$ROLLOVER" -delete
+    log "Removed backups older than ($ROLLOVER) days"
+    #
+    log "Finished. Completed in ($(( $SECONDS - $STARTUP )))s"
+}
+#
 #
 # <MAIN>
 #
@@ -100,50 +131,113 @@ log "Start-up"
 # Create backup dir if does not exist
 fc "$(mkdir -p "$TARGET" 2>&1)" "[0x1] Failed to Create/Access target directory '$TARGET'"
 #
-# Record currently running containers
-CURRENT_CONTAINERS="$(docker ps -q)"
+#
+# KVM Version
 #
 #
-# If reset is needed (-R | --reset)
-if [[ $RESET ]]; then
-    log "Stoping Containers"
-    docker stop ${CURRENT_CONTAINERS}
-# Hard reset [1] - RM containers (-H | --hardreset)
-elif [[ -n "$HARD" ]]; then
-    log "Stoping Containers"
-    docker stop ${CURRENT_CONTAINERS}
-    log "[Hard Reset] Deleting Containers and Networks from docker..."
-    docker rm ${CURRENT_CONTAINERS}
-    docker network rm $(docker network ls -q)
-# Pause Conatiners [Default] 
+if [[ $KVM ]]; then
+    #
+    # Capture currently running VMs
+    VMS=$(virsh list --all --name --state-running)
+    #
+    # If reset is enabled (-r | --reset)
+    if [[ $RESET ]]; then
+        #
+        log "Sending shutdown-signal to running Virtual Machine(s).."
+        virsh shutdown $VMS
+        #
+    # If pausing VMs (Default)
+    else
+        #
+        log "Pausing memory for running Virtual Machine(s)..."
+        virsh suspend $VMS
+        #
+    fi
+    #
+    # Wait for VMs to stop running
+    TIMEOUT=0
+    TIMEOUT_LIMIT=90
+    #
+    #log "Current timeout threshold is $TIMEOUT_LIMIT seconds"
+    #
+    DONE=false
+    while ! $DONE; do
+        #
+        # No running VMs found
+        if [[ -z $(virsh list --all --name --state-running) ]]; then
+            log "VMs stopped/paused successfully"
+            DONE=true
+        fi
+        #
+        TIMEOUT=$(($TIMEOUT + 1))
+        #
+        if [[ $TIMEOUT == $TIMEOUT_LIMIT ]]; then log "VMs failed to stop/pause within the timeout threshold: $TIMEOUT_LIMIT second(s). This is a fatal error!"; exit 1; fi
+        #
+        sleep 1
+        #
+    done
+    #
+    # Compress KVM data
+    compress "kvm"
+    #
+    # Restarting conatiners
+    log "Starting Virtual Machine(s)..."
+    # If reset is enabled (-r | --reset)
+    if [[ $RESET ]]; then
+        #
+        virsh start $VMS
+        #
+    # If pausing VMs (Default)
+    else
+        #
+        virsh resume $VMS
+        #
+    fi
+    #
+    # Summary
+    summary
+    #
+    #
+    exit 0
+#
+# Docker Version (Default) 
 else
-    log "Pausing Containers"
-    docker pause ${CURRENT_CONTAINERS}
+    #
+    # Record currently running containers
+    CURRENT_CONTAINERS="$(docker ps -q)"
+    #
+    #
+    # If reset is needed (-R | --reset)
+    if [[ $RESET ]]; then
+        log "Stoping Containers"
+        docker stop ${CURRENT_CONTAINERS}
+    # Hard reset [1] - RM containers (-H | --hardreset)
+    elif [[ -n "$HARD" ]]; then
+        log "Stoping Containers"
+        docker stop ${CURRENT_CONTAINERS}
+        log "[Hard Reset] Deleting Containers and Networks from docker..."
+        docker rm ${CURRENT_CONTAINERS}
+        docker network rm $(docker network ls -q)
+    # Pause Conatiners [Default] 
+    else
+        log "Pausing Containers"
+        docker pause ${CURRENT_CONTAINERS}
+    fi
+    #
+    # Capture and compress the containers
+    compress "docker"
+    #
+    # Hard reset [2] - rebuild containers
+    if [[ -n "$HARD" ]]; then
+        log "[Hard Reset] Rebuilding Containers and Networks using dir: $HARD"
+        runbulk "$HARD/networks/"
+        runbulk "$HARD/containers/"
+    else
+        # Regular restart of the containers
+        log "Starting Containers"
+        docker start ${CURRENT_CONTAINERS}
+    fi
+    #
+    # Summary
+    summary
 fi
-#
-# Capture and compress the containers
-log "Starting Compression $( if [[ $PIGZ ]]; then echo "using pigz"; fi )"
-#
-if [[ $PIGZ ]]; then
-    fcnk "$(tar -c --use-compress-program=pigz -f "$TARGET/$DATE-docker.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Compression with Pigz may have failed"
-else
-    fcnk "$(tar -zcf "$TARGET/$DATE-docker.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Compression may have failed"
-fi
-log "Finished Compression"
-#
-# Hard reset [2] - rebuild containers
-if [[ -n "$HARD" ]]; then
-    log "[Hard Reset] Rebuilding Containers and Networks using dir: $HARD"
-    runbulk "$HARD/networks/"
-    runbulk "$HARD/containers/"
-else
-    # Regular restart of the containers
-    log "Starting Containers"
-    docker start ${CURRENT_CONTAINERS}
-fi
-#
-# Roll over logs
-find "$TARGET/." -mtime "+$ROLLOVER" -delete
-log "Removed backups older than ($ROLLOVER) days"
-#
-log "Finished. Completed in ($(( $SECONDS - $STARTUP )))s"
