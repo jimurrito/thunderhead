@@ -232,10 +232,14 @@ else
         log "[Hard Reset] Rebuilding Containers and Networks using dir: $HARD"
         runbulk "$HARD/networks/"
         runbulk "$HARD/containers/"
-    else
-        # Regular restart of the containers
+    # Start stopped containers
+    elif [[ $RESET ]]; then
         log "Starting Containers"
         docker start ${CURRENT_CONTAINERS}
+    # Unpause
+    else
+        log "Unpausing Containers"
+        docker unpause ${CURRENT_CONTAINERS}
     fi
     #
     # Summary
