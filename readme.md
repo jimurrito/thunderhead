@@ -106,6 +106,9 @@ Running the script requires providing a directory path as an argument.~~
 
 ## Version History
 
+### Version 2.0.6.2 - *'VPN Check - code clean-up'*
++ Cleaned up code for vpn_chk.bash
+
 ### Version 2.0.6.1 - *'Freezer-fix'*
 + Fixed bug with the new pause method for the backup. Logic error caused paused containers to be started via *docker start* instead of *docker unpause*
 
