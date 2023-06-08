@@ -106,6 +106,9 @@ Running the script requires providing a directory path as an argument.~~
 
 ## Version History
 
+### Version 2.0.6.2 - *'VPN Check - code clean-up'*
++ Cleaned up code for vpn_chk.bash
+
 ### Version 2.0.6 - *'Freezer + KVM'*
 + [+] Added KVM support to Freezer.bash.
   + -k or --kvm can be used to opt for KVM usage instead of docker
