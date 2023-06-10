@@ -3,7 +3,7 @@
 
 FREEZER
 Stops and captures the current state of docker containers and KVM VMs.
-Compressing and Archiving the current state.
+Compressing and Archiving the state.
 
 '
 #
@@ -70,18 +70,23 @@ for ARG in "${ARGS[@]}"; do
     "-k" | "--kvm")
         KVM=true
     ;;
+    # Enable Verbose (Opt)
+    "-v" | "--verbose")
+        VERB=true
+    ;;
     # Help menu
     "-h" | "--help")
-        printf "Thunderhead - Freezer Help Menu
-    -s --source     Path to container data
-    -t --target     Target directory for tar backup
-    -r --rollover   Sets rollover interval. Defaults to 14 days.
-    -R --reset      Restart docker containers during the backup
-    -H --hardreset  Instead of using the standard docker pause method, all containers are destroyed and recreated. 
-                        Requires custom runscripts. (See github)
-       --pigz       Uses pigz for compression instead of gzip
-    -k --kvm        Backs up KVM VMs instead of Docker containers. Hardreset not support.
-    -h --help       This menu\n"
+        printf "Thunderhead - Freezer - Help Menu
+Ex: bash freezer.bash -s /path -t /path -r 12 -v --pigz
+    -s --source     [/path]      Path to data source. 
+    -t --target     [/path]      Output path for tar backup.
+    -r --rollover   [int(days)]  Custom rollover interval; Defaults to 14 days.
+    -R --reset                   Restart containers during the backup.
+    -H --hardreset  [/path]      Instead of using the standard pause method, all containers are destroyed and recreated. (See github)
+       --pigz                    Uses pigz for compression instead of gzip.
+    -k --kvm                     Backs up KVM VMs instead of Docker containers. Hardreset not support.
+    -v --verbose                 Enables verbose logging.
+    -h --help                    This menu!\n"
         exit
     ;;
     esac
@@ -92,7 +97,12 @@ done
 # Validate required inputs (Fatals)
 ec "$SOURCE" "[0x1] No Source directory provided. Please use -h or --help to see required arguments."
 ec "$TARGET" "[0x1] No Target directory provided. Please use -h or --help to see required arguments."
-if [[ -z $ROLLOVER ]]; then log "No Rollover integer provided, defaulting to 14 days."; ROLLOVER=14; fi
+# Corrective
+# Rollover int check
+if [[ -z $ROLLOVER ]]; then 
+    ROLLOVER=14
+    if [[ $VERB ]]; then log "No Rollover integer provided, defaulting to 14 days.";  fi
+fi
 # Fix for bug when source is '.'
 if [[ "$SOURCE" == "." ]]; then SOURCE=$(pwd); fi
 #
@@ -102,14 +112,14 @@ compress() {
     TYPE=$1
     #
     # Capture and compress the resources
-    log "Starting Compression $( if [[ $PIGZ ]]; then echo "using pigz"; fi )"
+    if [[ $VERB ]]; then log "Starting Compression $( if [[ $PIGZ ]]; then echo "using pigz"; fi )..."; fi
     #
     if [[ $PIGZ ]]; then
-        fcnk "$(tar -c --use-compress-program=pigz -f "$TARGET/$DATE-$TYPE.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Compression with Pigz may have failed"
+        fcnk "$(tar -c --use-compress-program=pigz -f "$TARGET/$DATE-$TYPE.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Message thrown during PIGZ compression. The job may have failed!"
     else
-        fcnk "$(tar -zcf "$TARGET/$DATE-$TYPE.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Compression may have failed"
+        fcnk "$(tar -zcf "$TARGET/$DATE-$TYPE.tar.gz" -C / "${SOURCE#/}/." 2>&1)" "[0x1] Message thrown during compression. The job may have failed!"
     fi
-    log "Finished Compression"
+    if [[ $VERB ]]; then log "Compression Complete."; fi
     #
 }
 # Summary log fnc
@@ -117,19 +127,19 @@ summary() {
     #
     # Roll over logs
     find "$TARGET/." -mtime "+$ROLLOVER" -delete
-    log "Removed backups older than ($ROLLOVER) days"
+    if [[ $VERB ]]; then log "Removed backups older than ($ROLLOVER) days."; fi
     #
-    log "Finished. Completed in ($(( $SECONDS - $STARTUP )))s"
+    log "Finished. Completed in ($(( $SECONDS - $STARTUP )))s."
 }
 #
 #
 # <MAIN>
 #
 # Initial Log
-log "Start-up"
+log "Start-up."
 #
 # Create backup dir if does not exist
-fc "$(mkdir -p "$TARGET" 2>&1)" "[0x1] Failed to Create/Access target directory '$TARGET'"
+fc "$(mkdir -p "$TARGET" 2>&1)" "[0x1] Failed to Create/Access Target directory '$TARGET'."
 #
 #
 # KVM Version
@@ -143,13 +153,13 @@ if [[ $KVM ]]; then
     # If reset is enabled (-r | --reset)
     if [[ $RESET ]]; then
         #
-        log "Sending shutdown-signal to running Virtual Machine(s).."
+        if [[ $VERB ]]; then log "Sending shutdown-signal to running Virtual Machine(s)..."; fi
         virsh shutdown $VMS
         #
     # If pausing VMs (Default)
     else
         #
-        log "Pausing memory for running Virtual Machine(s)..."
+        if [[ $VERB ]]; then log "Pausing memory for running Virtual Machine(s)..."; fi
         virsh suspend $VMS
         #
     fi
@@ -165,13 +175,13 @@ if [[ $KVM ]]; then
         #
         # No running VMs found
         if [[ -z $(virsh list --all --name --state-running) ]]; then
-            log "VMs stopped/paused successfully"
+            if [[ $VERB ]]; then log "VMs stopped/paused successfully."; fi
             DONE=true
         fi
         #
         TIMEOUT=$(($TIMEOUT + 1))
         #
-        if [[ $TIMEOUT == $TIMEOUT_LIMIT ]]; then log "VMs failed to stop/pause within the timeout threshold: $TIMEOUT_LIMIT second(s). This is a fatal error!"; exit 1; fi
+        if [[ $TIMEOUT == $TIMEOUT_LIMIT ]]; then log "[0x1] VMs failed to stop/pause within the timeout threshold: $TIMEOUT_LIMIT second(s). This is a fatal error!"; exit 1; fi
         #
         sleep 1
         #
@@ -181,7 +191,7 @@ if [[ $KVM ]]; then
     compress "kvm"
     #
     # Restarting conatiners
-    log "Starting Virtual Machine(s)..."
+    if [[ $VERB ]]; then log "Starting Virtual Machine(s)..."; fi
     # If reset is enabled (-r | --reset)
     if [[ $RESET ]]; then
         #
@@ -209,18 +219,18 @@ else
     #
     # If reset is needed (-R | --reset)
     if [[ $RESET ]]; then
-        log "Stoping Containers"
+        if [[ $VERB ]]; then log "Stoping Containers..."; fi
         docker stop ${CURRENT_CONTAINERS}
     # Hard reset [1] - RM containers (-H | --hardreset)
     elif [[ -n "$HARD" ]]; then
-        log "Stoping Containers"
+        if [[ $VERB ]]; then log "Stoping Containers..."; fi
         docker stop ${CURRENT_CONTAINERS}
-        log "[Hard Reset] Deleting Containers and Networks from docker..."
+        if [[ $VERB ]]; then log "[Hard Reset] Deleting Containers and Networks from docker..."; fi
         docker rm ${CURRENT_CONTAINERS}
         docker network rm $(docker network ls -q)
     # Pause Conatiners [Default] 
     else
-        log "Pausing Containers"
+        if [[ $VERB ]]; then log "Pausing Containers..."; fi
         docker pause ${CURRENT_CONTAINERS}
     fi
     #
@@ -229,16 +239,16 @@ else
     #
     # Hard reset [2] - rebuild containers
     if [[ -n "$HARD" ]]; then
-        log "[Hard Reset] Rebuilding Containers and Networks using dir: $HARD"
+        if [[ $VERB ]]; then log "[Hard Reset] Rebuilding Containers and Networks using dir: $HARD..."; fi
         runbulk "$HARD/networks/"
         runbulk "$HARD/containers/"
     # Start stopped containers
     elif [[ $RESET ]]; then
-        log "Starting Containers"
+        if [[ $VERB ]]; then log "Starting Containers..."; fi
         docker start ${CURRENT_CONTAINERS}
     # Unpause
     else
-        log "Unpausing Containers"
+        if [[ $VERB ]]; then log "Starting Containers..."; fi
         docker unpause ${CURRENT_CONTAINERS}
     fi
     #

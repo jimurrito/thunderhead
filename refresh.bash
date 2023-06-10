@@ -1,9 +1,9 @@
 #!/bin/bash
 
 : '
-refresh.bash
+Refresh
 
-Restarts and updates all docker conatiners
+Updates all docker conatiner images. Rebuilds docker enviroment as a result.
 
 '
 #
@@ -26,13 +26,6 @@ fc() {
 ec() {
     if [[ -z $1 ]]; then log "$2"; exit 1; fi
 }
-# Run scripts BULK
-runbulk() {
-    for i in $( ls "$1"*.sh | grep -v DEP ); do
-        log "Recreating '$i'..."
-        bash "$i"
-    done
-}
 #
 # Parse Input Vars
 for ARG in "${ARGS[@]}"; do
@@ -42,44 +35,58 @@ for ARG in "${ARGS[@]}"; do
         RUN_PATH=${ARGS[$ARGC+1]}
     ;;
     # Log Rotation (Opt)
-    "--CONFIRM")
+    "-C" | "--CONFIRM")
         CONFIRM=true
     ;;
     "-S" | "--silence")
         SILENT=true
     ;;
+    # Enable Verbose (Opt)
+    "-v" | "--verbose")
+        VERB=true
+    ;;
     # Help menu
     "-h" | "--help")
-        printf "Thunderhead - Refresh Help Menu\nWARNING! THIS SCRIPT CAN DESTROY ALL DOCKER DATA IF IMPROPERLY USED. YOU HAVE BEEN WARNED! ;p
-    -r --runscripts  Path to the scripts used to build the docker enviroment
-       --CONFIRM     Confirm running the operation (Required)
-    -S --silent      Silences the warning message at the begining of the run
-    -h --help        This menu\n"
+        printf "Thunderhead - Refresh - Help Menu\nWARNING! THIS SCRIPT CAN DESTROY ALL DOCKER DATA IF IMPROPERLY USED. YOU HAVE BEEN WARNED! ;p
+Ex: bash refresh.bash -r /path -C -s -v
+    -r --runscripts  [/path]  Path to the scripts used to build the docker enviroment.
+    -C --CONFIRM              Confirm running the operation (Required).
+    -S --silent               Silences the warning message at the begining of the run.
+    -v --verbose              Enables verbose logging.
+    -h --help                 This menu!\n"
         exit
     ;;
     esac
     # Iterate
     ARGC=$(($ARGC + 1))
 done
+3
+# Run scripts BULK
+runbulk() {
+    for i in $( ls "$1"*.sh | grep -v DEP ); do
+        if [[ $VERB ]]; then log "Recreating '$i'..."; fi
+        bash "$i"
+    done
+}
 #
 # Input check and per-run warning
 ec "$RUN_PATH" "[0x1] No path to the run scripts provided. Please use -r or --runscripts."
 if [[ -z $SILENT ]]; then  echo "WARNING! THIS OPERATION WILL DESTROY ALL DOCKER DATA IF IMPROPERLY USED. YOU HAVE BEEN WARNED! ;p"; fi
-ec "$CONFIRM" "[0X1] '--CONFIRM' is required to run the script. Please add it to your command to continue."
+ec "$CONFIRM" "[0X1] '-C' or '--CONFIRM' is required to run the script. Please add it to your command to continue."
 #
 # <Main>
 log "Start-up"
 #
-log "Stoping Containers."
+if [[ $VERB ]]; then log "Stoping Containers..."; fi
 docker stop $(docker ps -qa)
 #
-log "Pruning all docker data."
+if [[ $VERB ]]; then log "Pruning all docker data..."; fi
 docker system prune -fa
 #
-log "Rebuilding Docker Networks."
+if [[ $VERB ]]; then log "Rebuilding Docker Networks..."; fi
 runbulk "$RUN_PATH/networks/"
 #
-log "Rebuilding Docker Containers."
+if [[ $VERB ]]; then log "Rebuilding Docker Containers..."; fi
 runbulk "$RUN_PATH/containers/"
 #
-log "[0x0] Refresh completed successfully. Operation finished in ($(( $SECONDS - $STARTUP )))"
+log "[0x0] Refresh completed successfully. Operation finished in ($(( $SECONDS - $STARTUP )))s."
