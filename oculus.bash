@@ -2,7 +2,7 @@
 #
 : '
 
-OCULUS.SH
+OCULUS
 Gathers a snapshot of the current state of the machine.
 
 '
@@ -37,29 +37,35 @@ ec() {
 for ARG in "${ARGS[@]}"; do
     case $ARG in
     # Run Path (Rq)
-    "-r" | "--RUNPATH")
-        RUN_PATH=${ARGS[$ARGC+1]}
+    "-o" | "--output")
+        OUT_PATH=${ARGS[$ARGC+1]}
     ;;
     # Log Rotation (Opt)
-    "-R" | "--ROLLOVER")
+    "-r" | "--rollover")
         ROLLOVER=${ARGS[$ARGC+1]}
     ;;
     # Check NVIDIA Gpu? (Opt)
-    "--NVIDIA")
+    "--nvidia")
         NVIDIA=true
     ;;
     # Check ZFS Pool? (Opt)
-    "--ZFS")
+    "--zfs")
         ZFS=true
+    ;;
+    # Enable Verbose (Opt)
+    "-v" | "--verbose")
+        VERB=true
     ;;
     # Help menu
     "-h" | "--help")
-        printf "Thunderhead - Occulus Help Menu
-    -r --RUNPATH   Path for run captures
-    -R --ROLLOVER  Custom rollover interval. Default is 14
-       --NVIDIA    Captures output of 'nvidia-smi' during the run
-       --ZFS       Captures output of 'zpool status' during the run
-    -h --help      This menu\n"
+        printf "Thunderhead - Occulus - Help Menu
+Ex: bash oculus.bash -o /path -r 12 -v
+    -o --output    [/path]      Output path for captures.
+    -r --rollover  [int(days)]  Custom rollover interval; Default is 14.
+       --nvidia                 Captures output of 'nvidia-smi' during the run.
+       --zfs                    Captures output of 'zpool status' during the run.
+    -v --verbose                Enables Verbose logging.
+    -h --help                   This menu!\n"
         exit
     ;;
     esac
@@ -69,52 +75,54 @@ done
 #
 #
 # <Input Validation>
-ec "$RUN_PATH" "[0x1] No Run path provided. Please use -r or --RUNPATH."
-if [[ -z $ROLLOVER ]]; then log "No Rollover integer provided, defaulting to 14 days."; ROLLOVER=14; fi
+# If no output path provided, use current path
+if [[ -z $OUT_PATH ]]; then OUT_PATH=$(pwd);fi
+# Rollover int check
+if [[ -z $ROLLOVER ]]; then 
+    ROLLOVER=14
+    if [[ $VERB ]]; then log "No Rollover integer provided, defaulting to 14 days.";  fi
+fi
 #
 #
 # <MAIN>
 #
 # Initial Log
-log "Start-up"
+log "Start-up."
 #
 #
 # Create Directories
 # Run Path
-fc "$(mkdir -p "$RUN_PATH" 2>&1)" "[0x1] Failed to Create Run Path directory '$RUN_PATH'"
+fc "$(mkdir -p "$OUT_PATH" 2>&1)" "[0x1] Failed to Create/Access Output Path directory '$OUT_PATH'."
 # Temp Path
-fc "$(mkdir -p "$TEMP_PATH" 2>&1)" "[0x1] Failed to Create Temporary directory '$TEMP_PATH'"
+fc "$(mkdir -p "$TEMP_PATH" 2>&1)" "[0x1] Failed to Create/Access Temporary directory '$TEMP_PATH'."
 #
 #
 # Snapshot begins
-log "Starting System capture"
-#
+if [[ $VERB ]]; then log "Starting System capture..."; fi
 # Snapshot (Regular)
-who > "$TEMP_PATH/who.log"
-last > "$TEMP_PATH/last.log"
-ip a > "$TEMP_PATH/ip.log"
-ping -c 4 8.8.8.8 > "$TEMP_PATH/ping.log" # Records if there was internet access
-arp > "$TEMP_PATH/arp.log"
-netstat > "$TEMP_PATH/netstat.log"
-lsblk > "$TEMP_PATH/lsblk.log"
-cat /proc/meminfo > "$TEMP_PATH/meminfo.log"
-free -h > "$TEMP_PATH/free.log"
+who > "$TEMP_PATH/who"
+last > "$TEMP_PATH/last"
+ip a > "$TEMP_PATH/ip"
+ping -c 4 8.8.8.8 > "$TEMP_PATH/ping" # Records if there was internet access
+arp > "$TEMP_PATH/arp"
+netstat > "$TEMP_PATH/netstat"
+lsblk > "$TEMP_PATH/lsblk"
+cat /proc/meminfo > "$TEMP_PATH/meminfo"
+free -h > "$TEMP_PATH/free"
 # (Optional)
-if [[ $ZFS ]]; then zpool status > "$TEMP_PATH/zpool_stat.log"; fi
-if [[ $NVIDIA ]]; then nvidia-smi > "$TEMP_PATH/nvidia-smi.log"; fi
-#
-log "System capture complete"
+if [[ $ZFS ]]; then zpool status > "$TEMP_PATH/zpool_stat"; fi
+if [[ $NVIDIA ]]; then nvidia-smi > "$TEMP_PATH/nvidia-smi"; fi
 #
 #
 # Compress run
-log "Starting compression"
-#
-fcnk "$(tar -zcf "$RUN_PATH/$DATE.tar.gz" -C / "${TEMP_PATH#/}" 2>&1)" "[0x1] Compression may have failed"
+if [[ $VERB ]]; then log "System capture complete. Starting compression..."; fi
+fcnk "$(tar -zcf "$OUT_PATH/$DATE.tar.gz" -C / "${TEMP_PATH#/}" 2>&1)" "[0x1] Message thrown during compression. The job may have failed!"
 rm -dr "$TEMP_PATH"
-log "Compression Complete"
+if [[ $VERB ]]; then log "Compression Complete."; fi
+#
 #
 # Roll over logs
-find "$RUN_PATH/." -mtime "+$ROLLOVER" -delete
-log "Removed captures older than ($ROLLOVER) days"
+find "$OUT_PATH/." -mtime "+$ROLLOVER" -delete
+if [[ $VERB ]]; then log "Removed captures older than ($ROLLOVER) days."; fi
 #
-log "[0x0] Finished. Completed in ($(( $SECONDS - $STARTUP )))s"
+log "[0x0] Finished! Completed in ($(( $SECONDS - $STARTUP )))s."

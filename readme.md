@@ -1,5 +1,5 @@
 # Project Thunderhead
-A Simple and Comprehesive Systems-managing solution
+A Simple and Comprehesive Systems-management solution.
 
 Core Functions
 - [x] Performance
@@ -7,7 +7,10 @@ Core Functions
 - [x] Backups
 - [x] Auditing
 - [ ] Alerting
-- [x] Enforcement
+- [x] ~~Enforcement~~
+- [ ] Updates
+- [ ] Proactive hardware testing
+- [ ] Reactive mitigation and triaging
 
 ---
 
@@ -86,25 +89,29 @@ bash refresh.bash -r ~/dockerscripts --CONFIRM
 *For the paranoid in all of us...*
 
 This script will execute either wget or curl within a provided set of containers. These queries will pull back the current IP of both the host server and containers. If any container matches the Ip of the host, its killed.
+
+As of 2.0.7, a custom URL can be provided with the -u/--url argument on the cli. **Warning:** The API umust provide the IP in the request body as text. html/json based resonses will fail to be parsed.
+
 ```bash
 bash vpn_chk.bash container1 container2...
 ```
 >**Note:**
 > If the container has neither *wget* or *curl* available, the script will mark the IP Address as '*FAIL*', and ignore the container. It will not be stopped.
 
-
-## ~~Permission Check~~ 
-**Temporaily Deprecated** - *Lack of 'no-cobble' causes unintended modifications of compliant files. This breaks things like rollover that relies on last modified time. Script is not recommended to be ran until this is fixed in the next few updates. >2.0.0*
-
-~~Sets the permissions of a directory. By default, chmod == 777 and owner+group == root.
-Running the script requires providing a directory path as an argument.~~
-```bash
-:$ bash perm_chk.sh [/path/to/dir] [owner] [chmod#]
-```
-
 ---
 
 ## Version History
+
+### Version 2.0.7 - *'Clean-up + QoA'*
++ General Cleanup and minor refactoring.
+  + Normalized code for all scripts.
+  + Standardized help menus and logging.
+  + Corrected typos and punctuation.
++ [-] Fully removed prem_chk.sh from the repo. Will be re-added when the script is fixed.
++ [+] Added optional verbose logging arguments to all scripts. Reduces default logging in syslog/messages logs.
++ [+] Added Custom Ip address URL to vpn_chk.bash.
+  + With this feature, an alternative ip resolver can be used if needed.
++ [+] Added addtional core functions to the thunderhead project.
 
 ### Version 2.0.6.2 - *'VPN Check - code clean-up'*
 + Cleaned up code for vpn_chk.bash
