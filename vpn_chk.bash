@@ -76,6 +76,11 @@ CMDWGET="wget -q -O /dev/stdout $URL"
 #
 # Pull host IP for baseline
 CIP=$($CMDCURL)
+# Check if response is an IP - Run inner if not an IP
+if ! [[ "$CIP" =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+    log "[0x1] API request to the URL: $URL failed. Response was not an IPv4 Address: $CIP"
+    exit 1
+fi
 if [[ $VERB ]]; then log "Current host IP [$CIP]."; fi
 #
 #
@@ -115,4 +120,4 @@ for c in "${CONTS[@]}"; do
 done
 #
 #
-log "Finished. [$KILL] containers killed due to non-compliance. Completed in ($(( $SECONDS - $STARTUP )))s."
+log "Finished! [${#CONTS[@]}] container(s) scanned. [$KILL] container(s) killed due to non-compliance. Completed in ($(( $SECONDS - $STARTUP )))s."
