@@ -31,7 +31,7 @@ List of Commands:
 - nvidia-smi
 - zpool status
 ```bash
-bash oculus.bash -r [/path/to/dir] -R [Rollover Days] --ZFS --NVIDIA
+bash oculus.bash -o ./path/to/dir [ -r <days> --zfs --nvidia ]
 ```
 
 ---
@@ -41,7 +41,7 @@ bash oculus.bash -r [/path/to/dir] -R [Rollover Days] --ZFS --NVIDIA
 Backs up and compresses the persistent data used by the Docker containers. Will require a brief outage to complete the backup.
 Script will temporarily PAUSE only active containers. Ensuring inactive containers are not restarted with the active ones. Rolls logs over every 14 days default. **Pigz available as a multi-core solution instead of gzip for compression.**
 ```bash
-bash freezer.bash -s [/container/data] -t [/target/dir] [--pigz]
+bash freezer.bash -s ./container/data -t ./target/dir [ -r <days> -v --pigz --kvm -H <RunScripts>]
 ```
 ### Hard Reset
 In v2.0.3, -h/--hardreset was added to Freezer. This allows for custom run scripts to be ran when containers are restarted. When used, the script will delete all networks and containers (not prune) and then perform the backup. Once done, the run scripts and used to bring everying backup. [**Please refer to Refresh's section on Run Scripts for more info.**](https://github.com/jimurrito/thunderhead#run-scripts)
@@ -54,7 +54,7 @@ Using '-k' or '--kvm' with freezer offers support to backup KVM Virtual Machines
 ## Refresh
 Destroys all resources in docker (containers, images, networks, etc), and rebuild from a defined set of build scripts. The purpose of this being to redeploy all containers with fresh, up-to-date images.
 ```bash
-bash refresh.bash -r [/runscripts] --CONFIRM
+bash refresh.bash -r ./runscripts --CONFIRM [ -S -v ]
 ```
 ### Run scripts
 The runscripts used by refresh/freezer must be within the following format to be used by the script(s) effectively.
@@ -77,10 +77,7 @@ docker run -p 80:80 repo/container1
 # network1.sh
 docker network create network1
 ```
-```bash
-# Example
-bash refresh.bash -r ~/dockerscripts --CONFIRM
-```
+
 > Network scripts are ran first, then conatiners. If you have any containers, that are used like a network (Ex: gluetun) please put that run script in the *network/* directory.
 
 ---
@@ -93,14 +90,39 @@ This script will execute either wget or curl within a provided set of containers
 As of 2.0.7, a custom URL can be provided with the -u/--url argument on the cli. **Warning:** The API umust provide the IP in the request body as text. html/json based resonses will fail to be parsed.
 
 ```bash
-bash vpn_chk.bash container1 container2...
+# Example
+bash vpn_chk.bash [ -u <ALT-URL> -v ] container1 container2...
 ```
 >**Note:**
 > If the container has neither *wget* or *curl* available, the script will mark the IP Address as '*FAIL*', and ignore the container. It will not be stopped.
 
+### Native docker input support
+Script was designed to recive container input piped into it. This helps with automating which conatiners are checked by the script.
+```bash
+# Example
+bash vpn_chk.bash -v $(docker ps -qa)
+
+# NOTE: -q is required for docker ps.
+```
+
+---
+
+## Archive
+A simple compression/archival management solution. Shares the same functionality as Freezer, but without the Docker/KVM Control.
+
+```bash
+# Example
+bash archive.bash -s ./source -t ./target [ -r <days> -v --pigz ]
+```
+
 ---
 
 ## Version History
+
+### Version 2.0.8 - *'Archive added'*
++ [+] Added archive.bash as a simple backup, and rollover solution.
+  + Shares the same core backup functionality as freezer, but without the Docker/KVM control.
++ [+] Added "*no argument catch*" to all scripts; directing user to use -h or --help if no arguments are provided.
 
 ### Version 2.0.7 - *'Clean-up + QoA'*
 + General Cleanup and minor refactoring.
