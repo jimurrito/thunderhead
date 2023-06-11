@@ -32,6 +32,10 @@ ec() {
     if [[ -z $1 ]]; then log "$2"; exit 1; fi
 }
 #
+# No Arg Check
+if [[ ${#ARGS[@]} == 0 ]]; then 
+    echo "[0x1] No arguments provided. Please use -h or --help to see the required arguments."
+fi
 #
 # Parse Input Vars
 for ARG in "${ARGS[@]}"; do
@@ -59,7 +63,7 @@ for ARG in "${ARGS[@]}"; do
     # Help menu
     "-h" | "--help")
         printf "Thunderhead - Occulus - Help Menu
-Ex: bash oculus.bash -o /path -r 12 -v
+Ex: bash oculus.bash -o ./path/to/dir [ -r <days> --zfs --nvidia ]
     -o --output    [/path]      Output path for captures.
     -r --rollover  [int(days)]  Custom rollover interval; Default is 14.
        --nvidia                 Captures output of 'nvidia-smi' during the run.

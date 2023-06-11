@@ -27,6 +27,11 @@ ec() {
     if [[ -z $1 ]]; then log "$2"; exit 1; fi
 }
 #
+# No Arg Check
+if [[ ${#ARGS[@]} == 0 ]]; then 
+    echo "[0x1] No arguments provided. Please use -h or --help to see the required arguments."
+fi
+#
 # Parse Input Vars
 for ARG in "${ARGS[@]}"; do
     case $ARG in
@@ -48,7 +53,7 @@ for ARG in "${ARGS[@]}"; do
     # Help menu
     "-h" | "--help")
         printf "Thunderhead - Refresh - Help Menu\nWARNING! THIS SCRIPT CAN DESTROY ALL DOCKER DATA IF IMPROPERLY USED. YOU HAVE BEEN WARNED! ;p
-Ex: bash refresh.bash -r /path -C -s -v
+Ex: bash refresh.bash -r ./runscripts --CONFIRM [ -S -v ]
     -r --runscripts  [/path]  Path to the scripts used to build the docker enviroment.
     -C --CONFIRM              Confirm running the operation (Required).
     -S --silent               Silences the warning message at the begining of the run.

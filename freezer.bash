@@ -38,6 +38,10 @@ runbulk() {
     done
 }
 #
+# No Arg Check
+if [[ ${#ARGS[@]} == 0 ]]; then 
+    echo "[0x1] No arguments provided. Please use -h or --help to see the required arguments."
+fi
 #
 # Parse Input Vars
 for ARG in "${ARGS[@]}"; do
@@ -77,7 +81,7 @@ for ARG in "${ARGS[@]}"; do
     # Help menu
     "-h" | "--help")
         printf "Thunderhead - Freezer - Help Menu
-Ex: bash freezer.bash -s /path -t /path -r 12 -v --pigz
+Ex: bash freezer.bash -s ./container/data -t ./target/dir [ -r <days> -v --pigz --kvm -H <RunScripts>]
     -s --source     [/path]      Path to data source. 
     -t --target     [/path]      Output path for tar backup.
     -r --rollover   [int(days)]  Custom rollover interval; Defaults to 14 days.

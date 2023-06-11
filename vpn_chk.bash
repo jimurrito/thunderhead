@@ -24,6 +24,10 @@ ec() {
     if [[ -z $1 ]]; then log "$2"; exit 1; fi
 }
 #
+# No Arg Check
+if [[ ${#ARGS[@]} == 0 ]]; then 
+    echo "[0x1] No arguments provided. Please use -h or --help to see the required arguments."
+fi
 #
 # Parse Input Vars
 for ARG in "${ARGS[@]}"; do
@@ -39,7 +43,7 @@ for ARG in "${ARGS[@]}"; do
     # Help menu
     "-h" | "--help")
         printf "Thunderhead - VPN Check - Help Menu
-Ex: bash vpn_chk.bash [OPTIONS] docker1 docker2 ...
+Ex: bash vpn_chk.bash [ -u <ALT-URL> -v ] container1 container2...
     -u --url      [http://...]  Custom url for IP query. Use at your own risk.
     -v --verbose                Enables verbose logging.
     -h --help                   This menu!\n"
