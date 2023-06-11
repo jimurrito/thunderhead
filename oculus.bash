@@ -35,6 +35,7 @@ ec() {
 # No Arg Check
 if [[ ${#ARGS[@]} == 0 ]]; then 
     echo "[0x1] No arguments provided. Please use -h or --help to see the required arguments."
+    exit 1
 fi
 #
 # Parse Input Vars
